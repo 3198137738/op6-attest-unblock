@@ -14,18 +14,26 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
-
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.6'
+
+      - name: Show SDK env
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          ls "$ANDROID_HOME/platforms" || true
+          ls "$ANDROID_HOME/build-tools" || true
+
+      - name: Accept licenses (best effort)
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
 
       - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon --stacktrace
 
       - name: Show output
         if: always()
-        run: find app/build/outputs -name '*.apk' -exec ls -la {} \;
+        run: find app/build/outputs -name '*.apk' -exec ls -la {} \; || true
 
       - uses: actions/upload-artifact@v4
         if: always()
